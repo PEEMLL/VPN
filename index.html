@@ -561,7 +561,7 @@
             });
 
         // นับจำนวนเซิร์ฟเวอร์ทั้งหมด
-        fetch('https://raw.githubusercontent.com/PEEMLL/KEY1/refs/heads/main/KEY1')
+        fetch('https://raw.githubusercontent.com/Reykuth/-/main/เซิฟเวอร์')
             .then(response => response.text())
             .then(data => {
                 var serverList = data.split("\n");
@@ -599,4 +599,328 @@
 
         closeModal.addEventListener("click", function() {
             hideModal();
-        
+        });
+
+        retryLogin.addEventListener("click", function() {
+            hideModal();
+        });
+
+        function showModal() {
+            errorModal.classList.add('show');
+        }
+
+        function hideModal() {
+            errorModal.classList.remove('show');
+        }
+
+        // ฟังก์ชันแสดงเมนูหลัก
+        function showMainMenu() {
+            var mainMenu = document.createElement('div');
+            mainMenu.classList.add('container');
+            mainMenu.innerHTML = `
+                <h1>เมนูการใช้งาน</h1>
+                <button id="serverBtn"><i class="fas fa-server"></i> เลือกเซิร์ฟเวอร์</button>
+                <button id="chatBtn"><i class="fas fa-comments"></i> แชทคุยกัน</button>
+                <button id="detailsBtn"><i class="fas fa-info-circle"></i> รายละเอียดการใช้งาน</button>
+                <button id="aboutDevBtn"><i class="fas fa-user"></i> เกี่ยวกับผู้พัฒนา</button>
+            `;
+            document.body.innerHTML = ''; // ล้างเนื้อหาเดิม
+            document.body.appendChild(mainMenu);
+            showUserInfo();
+
+            // ฟังก์ชันปุ่มต่างๆ
+            document.getElementById("serverBtn").addEventListener("click", function() {
+                fetchServers(); // เรียกฟังก์ชันเดิมสำหรับเลือกเซิร์ฟเวอร์
+            });
+
+            document.getElementById("chatBtn").addEventListener("click", function() {
+                alert("ฟีเจอร์แชทยังไม่ได้เพิ่มในตอนนี้!");
+            });
+
+            document.getElementById("detailsBtn").addEventListener("click", function() {
+                alert("รายละเอียดการใช้งาน: ระบบสร้างโค้ดและการเลือกเซิร์ฟเวอร์");
+            });
+
+            document.getElementById("aboutDevBtn").addEventListener("click", function() {
+                alert("ผู้พัฒนา: นายสมชาย ระบบนี้ออกแบบเพื่อให้ผู้ใช้สร้างโค้ด API และเลือกเซิร์ฟเวอร์ได้");
+            });
+        }
+
+        // ฟังก์ชันแสดงข้อมูลผู้ใช้
+        function showUserInfo() {
+            var existingUserInfo = document.querySelector('.user-info');
+            if (existingUserInfo) {
+                existingUserInfo.remove();
+            }
+            var userInfoDiv = document.createElement('div');
+            userInfoDiv.classList.add('user-info');
+            userInfoDiv.innerHTML = `
+                <i class="fas fa-user-astronaut"></i>
+                <span class="name">${userName}</span>
+                <span class="vip-level">${userVipLevel.toUpperCase()}</span>
+                <div class="countdown" id="countdown"><i class="fas fa-hourglass-half"></i></div>
+            `;
+            document.body.appendChild(userInfoDiv);
+            startCountdown();
+        }
+
+        function startCountdown() {
+            function updateCountdown() {
+                var now = new Date();
+                var distance = expirationDate - now;
+
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    document.getElementById("countdown").innerText = "หมดอายุแล้ว";
+                    alert("API Key ของคุณหมดอายุแล้ว กรุณาเข้าสู่ระบบใหม่");
+                    location.reload();
+                } else {
+                    var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById("countdown").innerHTML = `<i class="fas fa-hourglass-half"></i> เหลือเวลา ${days} วัน ${hours} ชั่วโมง ${minutes} นาที ${seconds} วินาที`;
+                }
+            }
+
+            updateCountdown();
+            var countdownInterval = setInterval(updateCountdown, 1000);
+        }
+
+        // ฟังก์ชันแสดงการค้นหาเซิร์ฟเวอร์
+        function fetchServers() {
+            fetch('https://raw.githubusercontent.com/Reykuth/-/main/เซิฟเวอร์')
+            .then(response => response.text())
+            .then(data => {
+                var serverList = data.split("\n");
+                var serverContainer = document.createElement('div');
+                serverContainer.classList.add('container', 'server-page');
+                serverContainer.innerHTML = '<h1><i class="fas fa-server"></i> รายชื่อเซิร์ฟเวอร์</h1>';
+                var serverListDiv = document.createElement('div');
+                serverListDiv.classList.add('server-list');
+
+                serverList.forEach(function(server) {
+                    var serverMatch = server.trim().match(/^(.+?)\s+(vless:\/\/.+?)(?:\s+(vip\S+))?$/i);
+
+                    if (serverMatch) {
+                        var serverName = serverMatch[1].trim();
+                        var connectionString = serverMatch[2].trim();
+                        var serverVipLevel = serverMatch[3] || '';
+
+                        var serverElement = document.createElement("div");
+                        serverElement.classList.add("server-item");
+
+                        if (serverVipLevel === '') {
+                            serverElement.innerHTML = `
+                                <div class="server-info">
+                                    <i class="fas fa-globe server-icon"></i>
+                                    <span class="server-name">${serverName}</span>
+                                    <span class="free-label">ฟรี</span>
+                                </div>
+                                <span class="online-status"></span>
+                            `;
+                        } else {
+                            serverElement.innerHTML = `
+                                <div class="server-info">
+                                    <i class="fas fa-globe server-icon"></i>
+                                    <span class="server-name">${serverName}</span>
+                                    <span class="vip-label">${serverVipLevel.toUpperCase()}</span>
+                                </div>
+                                <span class="online-status"></span>
+                            `;
+                        }
+
+                        serverElement.addEventListener("click", function () {
+                            if (serverVipLevel === '' || userVipLevel === 'ฟรี' || userVipLevel === serverVipLevel) {
+                                showCodeOptions(serverName, connectionString);
+                            } else {
+                                showStyledAlert("ไม่สามารถเข้าใช้งานได้เพราะระดับ VIP ของคุณไม่ตรงกับเซิร์ฟเวอร์นี้");
+                            }
+                        });
+
+                        serverListDiv.appendChild(serverElement);
+                    }
+                });
+
+                serverContainer.appendChild(serverListDiv);
+                document.body.innerHTML = '';
+                document.body.appendChild(serverContainer);
+                showUserInfo();
+            })
+            .catch(error => console.error('เกิดข้อผิดพลาดในการดึงข้อมูล:', error));
+        }
+
+        function showCodeOptions(serverName, connectionString) {
+            var optionsContainer = document.createElement('div');
+            optionsContainer.classList.add('container');
+            optionsContainer.innerHTML = `
+                <h2><i class="fas fa-cogs"></i> เลือกรูปแบบการสร้างโค้ดสำหรับ ${serverName}</h2>
+                <button id="codeOption"><i class="fas fa-code"></i> สร้างแบบโค้ด</button>
+                <button id="qrOption"><i class="fas fa-qrcode"></i> สร้างแบบ QR</button>
+            `;
+            document.body.innerHTML = '';
+            document.body.appendChild(optionsContainer);
+            showUserInfo();
+
+            document.getElementById("codeOption").addEventListener("click", function() {
+                selectedOption = 'code';
+                showExpirationDateSelection(serverName, connectionString);
+            });
+
+            document.getElementById("qrOption").addEventListener("click", function() {
+                selectedOption = 'qr';
+                showExpirationDateSelection(serverName, connectionString);
+            });
+        }
+
+        function showExpirationDateSelection(serverName, connectionString) {
+            var expirationContainer = document.createElement('div');
+            expirationContainer.classList.add('container');
+            expirationContainer.innerHTML = `
+                <h1><i class="fas fa-calendar-alt"></i> กำหนดวันหมดอายุสำหรับ ${serverName}</h1>
+                <div class="input-group">
+                    <i class="fas fa-calendar-day input-icon"></i>
+                    <input type="number" id="expirationDays" placeholder="เลือกจำนวนวัน (1-30)" min="1" max="30" required>
+                </div>
+                <button id="confirmExpiration"><i class="fas fa-check"></i> ตกลง</button>
+            `;
+            document.body.innerHTML = '';
+            document.body.appendChild(expirationContainer);
+            showUserInfo();
+
+            document.getElementById("confirmExpiration").addEventListener("click", function () {
+                var expirationDays = document.getElementById("expirationDays").value;
+                if (expirationDays < 1 || expirationDays > 30) {
+                    showStyledAlert("กรุณาเลือกวันหมดอายุระหว่าง 1-30 วัน");
+                } else {
+                    showCodeInput(serverName, connectionString, expirationDays);
+                }
+            });
+        }
+
+        function showCodeInput(serverName, connectionString, expirationDays) {
+            var codeContainer = document.createElement('div');
+            codeContainer.classList.add('container', 'code-page');
+            codeContainer.innerHTML = `
+                <h1><i class="fas fa-pencil-alt"></i> ตั้งชื่อโค้ดสำหรับ ${serverName}</h1>
+                <div class="input-group">
+                    <i class="fas fa-tag input-icon"></i>
+                    <input type="text" id="codeName" placeholder="กรุณาใส่ชื่อโค้ด" required>
+                </div>
+                <button id="submitCode"><i class="fas fa-check"></i> ตกลง</button>
+            `;
+            document.body.innerHTML = '';
+            document.body.appendChild(codeContainer);
+            showUserInfo();
+
+            document.getElementById("submitCode").addEventListener("click", function () {
+                var codeName = document.getElementById("codeName").value;
+                if (codeName.trim() === '') {
+                    showStyledAlert("กรุณาตั้งชื่อโค้ดก่อน");
+                } else {
+                    showLoadingCreatingCode(connectionString, codeName, expirationDays);
+                }
+            });
+        }
+
+        function showLoadingCreatingCode(connectionString, codeName, expirationDays) {
+            var loadingContainer = document.createElement('div');
+            loadingContainer.classList.add('loading-container');
+            loadingContainer.innerHTML = `
+                <h1>กำลังสร้างโค้ด...</h1>
+                <div class="loading-animation">
+                    <div class="circle"></div>
+                    <div class="circle"></div>
+                    <div class="circle"></div>
+                </div>
+            `;
+            document.body.innerHTML = '';
+            document.body.appendChild(loadingContainer);
+            showUserInfo();
+
+            setTimeout(function () {
+                generateCode(codeName, connectionString, expirationDays);
+            }, 2000);
+        }
+
+        function generateCode(codeName, connectionString, expirationDays) {
+            var encodedCodeName = encodeURIComponent(codeName);
+            var code = `${connectionString.split("#")[0]}#${encodedCodeName}`;
+            var codeContainer = document.createElement('div');
+            codeContainer.classList.add('container', 'code-container');
+
+            if (selectedOption === 'code') {
+                codeContainer.innerHTML = `
+                    <h1><i class="fas fa-code"></i> โค้ดของคุณ</h1>
+                    <div class="code-display">${code}</div>
+                    <button class="copy-btn" id="copyCode"><i class="fas fa-copy"></i> คัดลอก</button>
+                    <button class="copy-btn" id="goBack"><i class="fas fa-arrow-left"></i> ย้อนกลับไปหน้าเลือกเซิร์ฟเวอร์</button>
+                `;
+            } else if (selectedOption === 'qr') {
+                codeContainer.innerHTML = `
+                    <h1><i class="fas fa-qrcode"></i> QR Code ของคุณ</h1>
+                    <div id="qrcode"></div>
+                    <button class="copy-btn" id="downloadQR"><i class="fas fa-download"></i> ดาวน์โหลด QR</button>
+                    <button class="copy-btn" id="goBack"><i class="fas fa-arrow-left"></i> ย้อนกลับไปหน้าเลือกเซิร์ฟเวอร์</button>
+                `;
+            }
+
+            document.body.innerHTML = '';
+            document.body.appendChild(codeContainer);
+            showUserInfo();
+
+            if (selectedOption === 'code') {
+                document.getElementById("copyCode").addEventListener("click", function () {
+                    navigator.clipboard.writeText(code);
+                    showStyledAlert("คัดลอกโค้ดแล้ว");
+                });
+            } else if (selectedOption === 'qr') {
+                var qr = qrcode(0, 'L');
+                qr.addData(code);
+                qr.make();
+                document.getElementById('qrcode').innerHTML = qr.createImgTag(6);
+
+                document.getElementById("downloadQR").addEventListener("click", function () {
+                    var link = document.createElement('a');
+                    link.download = 'qrcode.png';
+                    link.href = document.querySelector('#qrcode img').src;
+                    link.click();
+                });
+            }
+
+            document.getElementById("goBack").addEventListener("click", function () {
+                fetchServers();
+            });
+        }
+
+        function showStyledAlert(message) {
+            var customModal = document.createElement('div');
+            customModal.classList.add('modal', 'custom-alert');
+            customModal.innerHTML = `
+                <div class="modal-content">
+                    <span class="close-icon">&times;</span>
+                    <h2><i class="fas fa-info-circle"></i> แจ้งเตือน</h2>
+                    <p>${message}</p>
+                    <button class="copy-btn" id="closeAlert"><i class="fas fa-check"></i> ตกลง</button>
+                </div>
+            `;
+            document.body.appendChild(customModal);
+            customModal.classList.add('show');
+
+            customModal.querySelector('.close-icon').addEventListener('click', function() {
+                customModal.classList.remove('show');
+                setTimeout(() => {
+                    customModal.remove();
+                }, 300);
+            });
+
+            customModal.querySelector('#closeAlert').addEventListener('click', function() {
+                customModal.classList.remove('show');
+                setTimeout(() => {
+                    customModal.remove();
+                }, 300);
+            });
+        }
+    </script>
+</body>
+</html>
